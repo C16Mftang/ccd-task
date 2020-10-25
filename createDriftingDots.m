@@ -3,14 +3,15 @@ function createDriftingDots(coh,incoh,window,display,dots,grey,grey_dur,seq,tria
 % input: window pointer, info about the display, dots structure, 
 % total duration, sequence of trial types, change time matrix
 % output: none; option to save video of stim
+
 if saveVideo
     % add functionality to save video
-    movieFile = sprintf('/Users/tangmufeng/Desktop/UChicago/Courses/MacleanLab_research/tfrecord_data_processing/fullres/stim_%i.mov',fileidx);
+    movieFile = sprintf('C:/Users/TangMufeng/Desktop/UChicago/macleanlab/tfrecord_data_processing/fullres/stim_%i.mov',fileidx);
     movie = Screen('CreateMovie', window, movieFile);
     % in addition, save output txt file about the parameters of this movie
     % i.e. seq (0s and 1s denoting whether there is a change or not
     % changetimes, trialdir, trialcoh (starting coherence type), etc.
-    fileName = sprintf('/Users/tangmufeng/Desktop/UChicago/Courses/MacleanLab_research/tfrecord_data_processing/fullres/trialinfo/stim_%i_info.mat',fileidx);
+    fileName = sprintf('C:/Users/TangMufeng/Desktop/UChicago/macleanlab/tfrecord_data_processing/fullres/trialinfo/stim_%i_info.mat',fileidx);
     % Create a table with the data and variable names
     framerate = display.frameRate;
     save(fileName,'seq','trialdir','trialend','grey_dur','trialcoh','changetimes','framerate');
