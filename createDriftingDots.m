@@ -7,7 +7,9 @@ function createDriftingDots(coh,incoh,window,display,dots,grey,grey_dur,seq,tria
 if saveVideo
     % add functionality to save video
     movieFile = sprintf('C:/Users/TangMufeng/Desktop/UChicago/macleanlab/tfrecord_data_processing/fullres/stim_%i.mov',fileidx);
-    movie = Screen('CreateMovie', window, movieFile);
+    % IMPORTANT: the default frame rate for createMovie is 30, not 60 (what we want)
+    % if using the default framerate, output's lengths will be doubled
+    movie = Screen('CreateMovie', window, movieFile, [], [], 60);
     % in addition, save output txt file about the parameters of this movie
     % i.e. seq (0s and 1s denoting whether there is a change or not
     % changetimes, trialdir, trialcoh (starting coherence type), etc.
@@ -78,7 +80,7 @@ b = dots.center(2)-dots.apertureSize(2)/2;
 t = dots.center(2)+dots.apertureSize(2)/2;
 
 %% Set up experiment!
-
+disp(trialend)
 for ii = 1:length(seq)
     % for each trial in seq, initialize dots' starting positions
     dots.x = (rand(1,dots.nDots)-.5)*dots.apertureSize(1) + dots.center(1);
@@ -201,7 +203,7 @@ for ii = 1:length(seq)
             Screen('Flip', window);
         end 
     end
-    % finally grey screen for 3s, seeded with the proper positions
+    % finally grey screen for 4s, seeded with the proper positions
     greyFrames = round(grey_dur*display.frameRate);
     for frameNum = 1:greyFrames
         Screen('FillRect',window,0.3);

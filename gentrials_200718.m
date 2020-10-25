@@ -17,7 +17,7 @@ grey = white/2;
 
 %% This script creates ntotaltrials split into .mov files of ten trials each
 
-ntotaltrials = 10;
+ntotaltrials = 3000;
 ntrials = 10;
 nfiles = ntotaltrials/ntrials;
 % save video file in dimensions dim(width,height)
@@ -85,7 +85,7 @@ for fileidx = 1:nfiles
     % open window and color the background black
     % changed the "rect" parameter here to open only a small (non-full screen) window
     [window, windowRect] = PsychImaging('OpenWindow', screenNumber, black, [0 0 320 180]);
-    display.frameRate = FrameRate(window);
+    display.frameRate = FrameRate(window); % ~60frames/s, will be rounded to 60 in createDriftingDots.m
     % not necessary: dots.lifetime = display.frameRate*duration;
     display.resolution = zeros(1,2);
     [display.resolution(1), display.resolution(2)] = Screen('WindowSize',window);
