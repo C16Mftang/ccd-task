@@ -16,6 +16,7 @@ else:
     cwd = os.getcwd() + '/'
 
 # root_path = '/home/macleanlab/stim/coh_change/fullres/fullres'
+# check if it works
 root_path = '/Users/tangmufeng/Desktop/UChicago/Courses/MacleanLab_research/tfrecord_data_processing/fullres'
 for i in range(1):
     print(f'Resizing movie {i+2}...')
