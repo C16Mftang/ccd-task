@@ -23,14 +23,14 @@ nfiles = ntotaltrials/ntrials;
 % save video file in dimensions dim(width,height)
 % except this is not working and the video file is exactly the size of the
 % monitor... 
-dim = [200 125];
+% dim = [36 64];
 % set up parameters
 coh = 1;
 incoh = .15;
 dirs = [0, 90, 180, 270];
-dsize = 5; % pixels
+dsize = 9; % pixels
 dspeed = 45;
-ndots = 100;
+ndots = 150; % originally 460
 catch_dur = 4;
 n_catch_trials = round(ntrials/2);
 n_change_trials = ntrials - n_catch_trials;
@@ -38,7 +38,7 @@ n_change_trials = ntrials - n_catch_trials;
 change_time_min = 0.5;
 change_time_max = 3.5;
 change_time_detect = 0.6;
-grey_dur = 3;
+grey_dur = 4;
 
 % set up dots
 dots.nDots = ndots;
@@ -63,25 +63,28 @@ for fileidx = 1:nfiles
     trialcoh(randperm(ntrials,n_catch_trials)) = 1; % 1 means start at coh, 0 means incoh
     changetimes = zeros(1,ntrials);
     trialend = zeros(1,ntrials);
-    for ii = 1:length(trialdir)
+    for ii = 1:length(trialdir) % 1:ntrials
         diridx = randi([1,4]);
-        trialdir(ii) = dirs(diridx);
-        if seq(ii)~=0
+        trialdir(ii) = dirs(diridx); % one of the four directions
+        if seq(ii)~=0 % seq=1 means change, 0 means no change
             % Randomly choose when the change occurs during change trials
             changetimes(ii) = randi([change_time_min*1000, change_time_max*1000])/1000;
             % Trial ends 0.6s after the change occurs and next trial begins
-            trialend(ii) = changetimes(ii) + change_time_detect;
+            % trialend(ii) = changetimes(ii) + change_time_detect; 
+            % to keep each trial at the same length (frames), remove this for now
+            trialend(ii) = catch_dur;
         else
             trialend(ii) = catch_dur;
         end
     end
 
-% calculate total experiment duration
-duration = sum(trialend);
+    % calculate total experiment duration
+    duration = sum(trialend);
 
-%% Make stim!
+    %% Make stim!
     % open window and color the background black
-    [window, windowRect] = PsychImaging('OpenWindow', screenNumber, black, [0 0 256 144]);
+    % changed the "rect" parameter here to open only a small (non-full screen) window
+    [window, windowRect] = PsychImaging('OpenWindow', screenNumber, black, [0 0 320 180]);
     display.frameRate = FrameRate(window);
     % not necessary: dots.lifetime = display.frameRate*duration;
     display.resolution = zeros(1,2);
