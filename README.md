@@ -39,27 +39,27 @@ You can modify the following code snippets in your own tensorflow scripts to loa
 
 import tfrecord_dataset
 
-# step one: define necessary flags
+#### step one: define necessary flags
 absl.flags.DEFINE_integer('max_seq_len', 3500, '') # max duration of each trial in ms
 absl.flags.DEFINE_integer('batch_size', 32, '')
 absl.flags.DEFINE_integer('n_epochs', 100, '')
-# data path may change, currently it is here:
+#### data path may change, currently it is here:
 absl.flags.DEFINE_string('data_path','/home/macleanlab/stim/dmc/preprocessed/','')
 
-# step two: define training and test sets
-# example if files with indices 0 - 29 contain the training data
+#### step two: define training and test sets
+#### example if files with indices 0 - 29 contain the training data
 train_filenames = [os.path.join(flags.data_path, f'processed_data_{i}.tfrecord') for i in range(30)]
-# example if files with indices 30 - 39 contain the testing data
+#### example if files with indices 30 - 39 contain the testing data
 test_filenames = [os.path.join(flags.data_path, f'processed_data_{i}.tfrecord') for i in range(30, 40)]
 
-# step three: load and decode datasets
-# for training set:
+#### step three: load and decode datasets
+#### for training set:
 data_set = tfrecord_dataset.create_dataset(train_filenames, flags.max_seq_len, pool=None)
-# for test set:
+#### for test set:
 test_data_set = tfrecord_dataset.create_dataset(test_filenames, flags.max_seq_len)
-# you can certainly do this step more complexly, perhaps you want to shuffle the data, create a separate visualization set, etc. etc.
-# check out the create_dataset function in tfrecord_dataset itself to understand its workings better along with its defaults
+#### you can certainly do this step more complexly, perhaps you want to shuffle the data, create a separate visualization set, etc. etc.
+#### check out the create_dataset function in tfrecord_dataset itself to understand its workings better along with its defaults
 
-# step four: train and test model - the particulars will vary, but you may do something like the following:
+#### step four: train and test model - the particulars will vary, but you may do something like the following:
 model.fit(data_set, epochs=flags.n_epochs, validation_data=test_data_set)
 model.evaluate(test_data_set)
