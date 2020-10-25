@@ -25,7 +25,7 @@ def read_video(path, return_frames=False, width=64, height=36, encoding='png'):
     # and the time frame in which the network must give a response about the category.
     print("reading video...")
 
-    reader = skvideo.io.vreader(path)
+    reader = skvideo.io.vreader(path, num_frames=4800) # remember to specify num frames here
 
     encoded_list = []
     frame_list = []
@@ -86,17 +86,27 @@ def prepare_example(video_path, desc_path, width=64, height=36, debug=False):
     # and therefore what the opposite coherence is after the change (if any) on a given trial
     # I also have the direction (out of four) in which the dots are drifting
 
-    # you will change what you load in from desc (which is the metadata file) accordingly
     desc = scipy.io.loadmat(desc_path)
-    frame_rate = desc['framerate'][0, 0]
-    start_times = np.cumsum(np.concatenate(([0], desc['trialend'][0, :-1] + 3)))
-    end_times = np.cumsum(desc['trialend'][0] + 3) - 3
-    change_times = desc['changetimes'][0]
-    trial_coh = desc['trialcoh'][0]
-    dominant_direction = (desc['trialdir'][0] / 90).astype(np.int) + 1
-    is_changes = change_times > 0
+    frame_rate = desc['framerate'][0, 0] # ~60fps here
+    grey_dur = desc['grey_dur'][0,0] # duration of grey screens
+    # start and end times of change trials
+    start_times = np.cumsum(np.concatenate(([0], desc['trialend'][0, :-1] + grey_dur)))
+    end_times = np.cumsum(desc['trialend'][0] + grey_dur) - grey_dur
+    # start and end frames
     start_frames = (start_times * frame_rate).astype(np.int)
     end_frames = (end_times * frame_rate).astype(np.int)
+    # start and end of each catch trial i.e. grey screen
+    catch_start_times = end_times
+    catch_end_times = np.append(start_times[1:], 80)
+    # start and end frames of each catch
+    catch_start_frames = (catch_start_times * frame_rate).astype(np.int)
+    catch_end_frames = (catch_end_times * frame_rate).astype(np.int)
+
+    # change and coh and directions
+    change_times = desc['changetimes'][0]
+    trial_coh = desc['trialcoh'][0] # 0 for start with 15%, 1 for start with 100%
+    dominant_direction = (desc['trialdir'][0] / 90).astype(np.int) + 1
+    is_changes = change_times > 0
     change_frames = ((start_times + change_times) * frame_rate).astype(np.int)
     change_label = np.zeros(len(encoded), dtype=np.int64)
     label_duration = int(.4 * frame_rate)
@@ -120,13 +130,21 @@ def prepare_example(video_path, desc_path, width=64, height=36, debug=False):
         'coherence_label': _int64_list_feature(coh_label),
         'direction_label': _int64_list_feature(direction_label),
         'dominant_direction': _int64_list_feature(dominant_direction),
-        'trial_coherence': _int64_list_feature(trial_coh)
+        'trial_coherence': _int64_list_feature(trial_coh),
+        'start_frames': _int64_list_feature(start_frames), # will need the start and end frames when we slice the movie into trials
+        'end_frames': _int64_list_feature(end_frames),
+        'catch_start_frames': _int64_list_feature(catch_start_frames),
+        'catch_end_frames': _int64_list_feature(catch_end_frames),
     }
     example = tf.train.Example(features=tf.train.Features(feature=features))
     if not debug:
         return example
-    # in coherence change task, I would return:
-    return example, [encoded, change_label, coh_label, direction_label, dominant_direction, trial_coh]
+    # for coherence change task
+    return example, [encoded, change_label, 
+                     coh_label, direction_label, 
+                     dominant_direction, trial_coh,
+                     start_frames, end_frames,
+                     catch_start_frames, catch_end_frames]
 
 
 def main():
@@ -138,7 +156,7 @@ def main():
     # parser.add_argument('save_to', type=str, help='output path for tfrecord file') # for coherence change task, this was /home/macleanlab/stim/coh_change/preprocessed/
     args = parser.parse_args()
 
-    for i in range(args.from_index, args.to_index): # I noticed prepended zeros to your indexing, you can modify this part
+    for i in range(args.from_index, args.to_index):
         writer = tf.io.TFRecordWriter(cwd+f'preprocessed/processed_data_{i}.tfrecord')
         video_path = os.path.join(args.root_path, f'stim_{i}.mov')
         desc_path = os.path.join(args.root_path_metadata, f'stim_{i}_info.mat')

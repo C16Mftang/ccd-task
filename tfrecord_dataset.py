@@ -5,7 +5,7 @@ import numpy as np
 import tensorflow as tf
 import keras
 
-HOME_PATH = '/home/macleanlab/mufeng/models/'
+HOME_PATH = '/home/macleanlab/mufeng/NaturalMotionCNN/models/'
 PI = np.pi
 
 def pool_fn(_a):
