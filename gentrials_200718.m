@@ -17,7 +17,7 @@ grey = white/2;
 
 %% This script creates ntotaltrials split into .mov files of ten trials each
 
-ntotaltrials = 3000;
+ntotaltrials = 10;
 ntrials = 10;
 nfiles = ntotaltrials/ntrials;
 % save video file in dimensions dim(width,height)

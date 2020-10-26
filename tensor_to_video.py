@@ -2,8 +2,8 @@ import os
 import cv2
 import argparse
 import skvideo
-path = "C:/ffmpeg/bin"
-skvideo.setFFmpegPath(path)
+# path = "C:/ffmpeg/bin"
+# skvideo.setFFmpegPath(path)
 import skvideo.io
 import numpy as np
 import scipy.io
@@ -21,22 +21,52 @@ else:
 
 root_path = 'fullres'
 root_path_metadata = 'fullres/trialinfo'
-for i in range(1):
+for i in range(10):
     print(f'Resizing movie {i+1}...')
     video_path = os.path.join(root_path, f'stim_{i+1}.mov')
     desc_path = os.path.join(root_path_metadata, f'stim_{i+1}_info.mat')
     desc = scipy.io.loadmat(desc_path)
-    print(desc['trialend'])
-    start_times = np.cumsum(np.concatenate(([0], desc['trialend'][0, :-1] + 4)))
-    end_times = np.cumsum(desc['trialend'][0] + 4) - 4
-    reader = skvideo.io.vreader(video_path, num_frames=1000)
+    framerate = int(round(desc['framerate'][0,0]))
+    # reader is an ndarray if use vread, a generator if use vreader
+    reader = skvideo.io.vread(video_path, num_frames=4800)
+
     frames = []
-    for frame in reader:
+    for j in range(len(reader)):
+    # for frame in reader:
+        frame = reader[j]
         frame = tf.cast(tf.image.resize(frame, (36, 64)), tf.uint8)
         frame = frame.numpy()
         frame = np.expand_dims(frame, axis=0)
         frames.append(frame)
     movie = np.concatenate(frames, axis=0)
     print(len(frames))
+    skvideo.io.vwrite(f'/home/macleanlab/mufeng/NaturalMotionCNN/Movies_dot/stim{i+1}.mp4', movie, inputdict={'-r': '60'}, outputdict={'-r': '60'})
 
-    skvideo.io.vwrite(f'fullres/resized_stim_{i+1}.mp4', movie)
+    # for j in range(len(start_times)):
+    #     trial = reader[start_times[j]*framerate: end_times[j]*framerate]
+    #     frames = []
+    #     for frame in trial:
+    #         frame = tf.cast(tf.image.resize(frame, (36, 64)), tf.uint8)
+    #         frame = frame.numpy()
+    #         frame = np.expand_dims(frame, axis=0)
+    #         frames.append(frame)
+    #     movie = np.concatenate(frames, axis=0)
+    #     print(len(frames))
+
+    #     # remember to specify framerate here, otherwise the movie length will change!
+    #     skvideo.io.vwrite(f'fullres/resized/resized_stim_{i+1}_trial_{j}.mp4', movie, inputdict={'-r': '60'}, outputdict={'-r': '60'})
+
+    # for j in range(len(start_times)):
+    #     catch_trial = reader[catch_start_times[j]*framerate: catch_end_times[j]*framerate]
+    #     frames = []
+    #     for frame in catch_trial:
+    #         frame = tf.cast(tf.image.resize(frame, (36, 64)), tf.uint8)
+    #         frame = frame.numpy()
+    #         frame = np.expand_dims(frame, axis=0)
+    #         frames.append(frame)
+    #     movie = np.concatenate(frames, axis=0)
+    #     print(len(frames))
+
+    #     # remember to specify framerate here, otherwise the movie length will change!
+    #     skvideo.io.vwrite(f'fullres/resized/resized_stim_{i+1}_catch_{j}.mp4', movie, inputdict={'-r': '60'}, outputdict={'-r': '60'})
+
