@@ -8,7 +8,6 @@ import keras
 HOME_PATH = '/home/macleanlab/mufeng/NaturalMotionCNN/models/'
 PI = np.pi
 
-"testing this!"
 def pool_fn(_a):
     np_bytes = blosc.decompress(_a)
     np_bytes_io = io.BytesIO(np_bytes)
