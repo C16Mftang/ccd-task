@@ -14,7 +14,7 @@ def pool_fn(_a):
     return np.load(np_bytes_io, allow_pickle=True)
 
 
-def create_dataset(paths, max_seq_len=3500, encoding='png', pool=None):
+def create_dataset(paths, max_seq_len=4800, encoding='png', pool=None):
     # again, you will change the features to reflect the variables in your own metadata
     # you may also change the max_seq_len (which is the maximum duration for each trial in ms)
     feature_description = {
@@ -134,12 +134,7 @@ def main():
     cnn_model = keras.models.load_model(model_path)
     # convert xy coors to angles 
     xy_pred = cnn_model.predict(all_movies)
-    angs = np.arctan2(xy_pred[1], xy_pred[0])
-    # print(angs.reshape((angs.shape[0],)))
-    categories = angs_to_categories(angs).reshape((angs.shape[0],))
-    # excluding the gray screens
-    pred_directions = categories
-    true_directions = np.concatenate(true_dirs)
+    
     coherences = np.concatenate(trial_cohs)
     # indices of coherence levels 100%
     coh_ind_100 = np.where(coherences==1)[0]
