@@ -9,9 +9,6 @@ import blosc
 
 from io import BytesIO
 
-<<<<<<< HEAD
-def read_video(path, return_frames=False, width=200, height=125, encoding='blosc'):
-=======
 # current working directory
 if(os.getcwd()[-1] == '/'):
     cwd = os.getcwd()
@@ -20,21 +17,15 @@ else:
 
 # changed (width, height) to (64, 36) for compatibility with CNN
 def read_video(path, return_frames=False, width=64, height=36, encoding='png'):
->>>>>>> 1d47101aca615c8c3d5f6a245259d8367cd244dc
     # note that these are the width and height dimensions that I downsized my video frames to.
     # I noticed that your videos seem to be square-framed (unless that's an artefact of how it was saved) -
     # I recommend you to use these rectangular dimesions instead.
     # I also recommend you to have gray screen in between each trial and during the delay period, as opposed to white.
     # Please specify in metadata (if you haven't already) exactly when each trial begins and ends
     # and the time frame in which the network must give a response about the category.
-<<<<<<< HEAD
-
-    reader = skvideo.io.vreader(path)
-=======
     print("reading video...")
 
     reader = skvideo.io.vreader(path, num_frames=4800) # remember to specify num frames here
->>>>>>> 1d47101aca615c8c3d5f6a245259d8367cd244dc
 
     encoded_list = []
     frame_list = []
@@ -44,12 +35,8 @@ def read_video(path, return_frames=False, width=64, height=36, encoding='png'):
         collect_frames = True
 
     for frame in reader:
-<<<<<<< HEAD
-        frame = tf.image.rgb_to_grayscale(frame)
-=======
         # the natural movies have 3 channels, so it's better not to change to grayscale here, which has only 1 channel
         # frame = tf.image.rgb_to_grayscale(frame)
->>>>>>> 1d47101aca615c8c3d5f6a245259d8367cd244dc
         frame = tf.cast(tf.image.resize(frame, (height, width)), tf.uint8)
         # encoded = tf.io.encode_png(frame)
         if encoding == 'png':
@@ -70,10 +57,7 @@ def read_video(path, return_frames=False, width=64, height=36, encoding='png'):
             np_bytes = BytesIO()
             np.save(np_bytes, frames)
             encoded_list = [blosc.compress(np_bytes.getvalue())]
-<<<<<<< HEAD
-=======
     print('reading done')
->>>>>>> 1d47101aca615c8c3d5f6a245259d8367cd244dc
 
     if return_frames:
         return encoded_list, frames
@@ -90,11 +74,7 @@ def _int64_list_feature(value):
     return tf.train.Feature(int64_list=tf.train.Int64List(value=value))
 
 
-<<<<<<< HEAD
-def prepare_example(video_path, desc_path, width=200, height=125, debug=False):
-=======
 def prepare_example(video_path, desc_path, width=64, height=36, debug=False):
->>>>>>> 1d47101aca615c8c3d5f6a245259d8367cd244dc
     encoded = read_video(video_path, width=width, height=height)
 
     # what follows is the code used to prepare the metadata from my dot coherence change task
@@ -106,20 +86,6 @@ def prepare_example(video_path, desc_path, width=64, height=36, debug=False):
     # and therefore what the opposite coherence is after the change (if any) on a given trial
     # I also have the direction (out of four) in which the dots are drifting
 
-<<<<<<< HEAD
-    # you will change what you load in from desc (which is the metadata file) accordingly
-    desc = scipy.io.loadmat(desc_path)
-    """
-    frame_rate = desc['framerate'][0, 0]
-    start_times = np.cumsum(np.concatenate(([0], desc['trialend'][0, :-1] + 3)))
-    end_times = np.cumsum(desc['trialend'][0] + 3) - 3
-    change_times = desc['changetimes'][0]
-    trial_coh = desc['trialcoh'][0]
-    dominant_direction = (desc['trialdir'][0] / 90).astype(np.int) + 1
-    is_changes = change_times > 0
-    start_frames = (start_times * frame_rate).astype(np.int)
-    end_frames = (end_times * frame_rate).astype(np.int)
-=======
     desc = scipy.io.loadmat(desc_path)
     frame_rate = desc['framerate'][0, 0] # ~60fps here
     grey_dur = desc['grey_dur'][0, 0] # duration of grey screens
@@ -141,16 +107,12 @@ def prepare_example(video_path, desc_path, width=64, height=36, debug=False):
     trial_coh = desc['trialcoh'][0] # 0 for start with 15%, 1 for start with 100%
     dominant_direction = (desc['trialdir'][0] / 90).astype(np.int) + 1
     is_changes = change_times > 0
->>>>>>> 1d47101aca615c8c3d5f6a245259d8367cd244dc
     change_frames = ((start_times + change_times) * frame_rate).astype(np.int)
     change_label = np.zeros(len(encoded), dtype=np.int64)
     label_duration = int(.4 * frame_rate)
     coh_label = np.zeros(len(encoded), dtype=np.int64)
     direction_label = np.zeros(len(encoded), dtype=np.int64)
-<<<<<<< HEAD
-=======
     print("Number of frames of each movie: ", len(direction_label))
->>>>>>> 1d47101aca615c8c3d5f6a245259d8367cd244dc
 
     for is_change, change_frame in zip(is_changes, change_frames):
         change_label[change_frame:change_frame + label_duration] = is_change
@@ -159,29 +121,6 @@ def prepare_example(video_path, desc_path, width=64, height=36, debug=False):
         coh_label[start_frames[i]:end_frames[i]] = trial_coh[i]
         if is_changes[i]:
             coh_label[change_frames[i]:end_frames[i]] = 1 - trial_coh[i]
-<<<<<<< HEAD
-        direction_label[start_frames[i]:end_frames[i]] = dominant_direction[i]"""
-
-    features = {
-        # this is how I would save a dictionary of my coherence change metadata
-        """
-        'frames': _bytes_list_feature(encoded), # this is the encoded movie frames
-        'change_label': _int64_list_feature(change_label),
-        'coherence_label': _int64_list_feature(coh_label),
-        'direction_label': _int64_list_feature(direction_label)
-        """
-        # I think these are the features in the metadata you provided me.
-        # However, I couldn't quite understand how they were structured and used, or which ones are important to calculate loss
-        # and for that matter how you intend to calculate loss.
-        # Of course since this is a delay task, the loss will be calculated / given only at the very end of a trial, after the second stimulus is shown.
-        # Please change this features dictionary to accurately reflect your data as needed.
-        'ans': _int64_list_feature(ans), # I noticed the class of these variables in matlab is uint32; here I've made them int64
-        'disp': _int64_list_feature(disp),
-        'id': _int64_list_feature(id),
-        'meta': _int64_list_feature(meta),
-        'stim': _int64_list_feature(stim),
-        'trials': _int64_list_feature(trials)
-=======
         direction_label[start_frames[i]:end_frames[i]] = dominant_direction[i]
 
     features = {
@@ -196,20 +135,10 @@ def prepare_example(video_path, desc_path, width=64, height=36, debug=False):
         'end_frames': _int64_list_feature(end_frames),
         'grey_start_frames': _int64_list_feature(grey_start_frames),
         'grey_end_frames': _int64_list_feature(grey_end_frames),
->>>>>>> 1d47101aca615c8c3d5f6a245259d8367cd244dc
     }
     example = tf.train.Example(features=tf.train.Features(feature=features))
     if not debug:
         return example
-<<<<<<< HEAD
-    return example, [ans, disp, id, meta, stim, trials]
-    # in coherence change task, I would return:
-    """return example, [encoded, change_label, coh_label, direction_label]"""
-
-
-def main():
-    parser = argparse.ArgumentParser()
-=======
     # for coherence change task
     return example, [encoded, change_label, 
                      coh_label, direction_label, 
@@ -220,20 +149,10 @@ def main():
 
 def main():
     parser = argparse.ArgumentParser(description='Args for processing videos')
->>>>>>> 1d47101aca615c8c3d5f6a245259d8367cd244dc
     parser.add_argument('root_path', type=str, help='root directory of videos (which includes also metadata)')
     parser.add_argument('root_path_metadata', type=str, help='root directory of videos (which includes also metadata)')
     parser.add_argument('from_index', type=int, help='process all trials starting from this index')
     parser.add_argument('to_index', type=int, help='process all trials until (exclusive) this index')
-<<<<<<< HEAD
-    parser.add_argument('save_to', type=str, help='output path for tfrecord file') # for coherence change task, this was /home/macleanlab/stim/coh_change/preprocessed/
-    args = parser.parse_args()
-
-    writer = tf.io.TFRecordWriter(args.save_to)
-    for i in range(args.from_index, args.to_index): # I noticed prepended zeros to your indexing, you can modify this part
-        video_path = os.path.join(args.root_path, f'stim_{i}.mov')
-        desc_path = os.path.join(args.root_path_metadata, f'info_{i}.mat')
-=======
     # parser.add_argument('save_to', type=str, help='output path for tfrecord file') # for coherence change task, this was /home/macleanlab/stim/coh_change/preprocessed/
     args = parser.parse_args()
 
@@ -241,7 +160,6 @@ def main():
         writer = tf.io.TFRecordWriter(cwd+f'preprocessed/processed_data_{i}.tfrecord')
         video_path = os.path.join(args.root_path, f'stim_{i}.mov')
         desc_path = os.path.join(args.root_path_metadata, f'stim_{i}_info.mat')
->>>>>>> 1d47101aca615c8c3d5f6a245259d8367cd244dc
         example = prepare_example(video_path, desc_path)
         writer.write(example.SerializeToString())
         print('>', end='')
@@ -260,11 +178,7 @@ def debug():
     # similar to in prepare_example, which reflects the metadata for the dot coherence change task
     # you will change accordingly, for how you desire to debug
 
-<<<<<<< HEAD
-    """frame_rate = desc['framerate'][0, 0]
-=======
     frame_rate = desc['framerate'][0, 0]
->>>>>>> 1d47101aca615c8c3d5f6a245259d8367cd244dc
     start_times = np.cumsum(np.concatenate(([0], desc['trialend'][0, :-1] + 3)))
     change_times = desc['changetimes'][0]
     is_changes = change_times > 0
@@ -282,11 +196,7 @@ def debug():
     fig, ax = plt.subplots(figsize=(8, 4))
     ax.plot(x, time_avg)
     ax.plot(x, ch)
-<<<<<<< HEAD
-    plt.show()"""
-=======
     plt.show()
->>>>>>> 1d47101aca615c8c3d5f6a245259d8367cd244dc
 
 
 def debug_new():

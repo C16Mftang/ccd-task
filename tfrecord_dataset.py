@@ -1,44 +1,30 @@
 import os
 import io
-<<<<<<< HEAD
 import blosc
-import numpy as np
-import tensorflow as tf
-
-=======
-# import blosc
 import numpy as np
 import tensorflow as tf
 import keras
 
 HOME_PATH = '/home/macleanlab/mufeng/NaturalMotionCNN/models/'
 PI = np.pi
->>>>>>> 1d47101aca615c8c3d5f6a245259d8367cd244dc
 
+"testing this!"
 def pool_fn(_a):
     np_bytes = blosc.decompress(_a)
     np_bytes_io = io.BytesIO(np_bytes)
     return np.load(np_bytes_io, allow_pickle=True)
 
 
-<<<<<<< HEAD
 def create_dataset(paths, max_seq_len=3500, encoding='png', pool=None):
-=======
-def create_dataset(paths, max_seq_len=4800, encoding='png', pool=None):
->>>>>>> 1d47101aca615c8c3d5f6a245259d8367cd244dc
     # again, you will change the features to reflect the variables in your own metadata
     # you may also change the max_seq_len (which is the maximum duration for each trial in ms)
     feature_description = {
         'frames': tf.io.VarLenFeature(tf.string),
         'change_label': tf.io.VarLenFeature(tf.int64),
         'coherence_label': tf.io.VarLenFeature(tf.int64),
-<<<<<<< HEAD
-        'direction_label': tf.io.VarLenFeature(tf.int64)
-=======
         'direction_label': tf.io.VarLenFeature(tf.int64),
         'dominant_direction': tf.io.VarLenFeature(tf.int64),
         'trial_coherence': tf.io.VarLenFeature(tf.int64)
->>>>>>> 1d47101aca615c8c3d5f6a245259d8367cd244dc
     }
     data_set = tf.data.TFRecordDataset(paths)
 
@@ -53,38 +39,22 @@ def create_dataset(paths, max_seq_len=4800, encoding='png', pool=None):
                     return pool_fn(_a.numpy())
                 else:
                     return pool.apply(pool_fn, (_a.numpy(),))
-<<<<<<< HEAD
-
-            _frames = tf.py_function(func=fn, inp=[_x['frames'].values[0]], Tout=tf.uint8)[:max_seq_len]
-            # _frames = tf.zeros((max_seq_len, 125, 200, 1), tf.uint8)
-
-=======
             # frames: the encoded video
             _frames = tf.py_function(func=fn, inp=[_x['frames'].values[0]], Tout=tf.uint8)[:max_seq_len]
 
         # This whole padding section is not needed, as we have movies and trials of fixed size
         """
->>>>>>> 1d47101aca615c8c3d5f6a245259d8367cd244dc
         _m1 = tf.cast(tf.random.uniform(minval=0, maxval=1, shape=()) > .5, tf.int32) * 2 - 1
         _m2 = tf.cast(tf.random.uniform(minval=0, maxval=1, shape=()) > .5, tf.int32) * 2 - 1
         _frames = _frames[:, ::_m1, ::_m2]
         _seq_len = tf.shape(_frames)[0]
         _p1 = [0, max_seq_len - _seq_len]
         _p = [_p1, [0, 0], [0, 0], [0, 0]]
-<<<<<<< HEAD
-
-=======
->>>>>>> 1d47101aca615c8c3d5f6a245259d8367cd244dc
         _frames = tf.pad(_frames, _p)
 
         _label = tf.pad(_x['coherence_label'].values[:max_seq_len], [_p1])
         _change_label = tf.pad(_x['change_label'].values[:max_seq_len], [_p1])
         _change_label += tf.pad(_change_label[:-23], [[23, 0]])
-<<<<<<< HEAD
-        #_label += tf.pad(_label[:-23*2], [[23*2, 0]])
-        # _x = {'frames': _frames, 'label': _label}
-        return _frames, dict(tf_op_layer_coherence=_label, tf_op_layer_change=_change_label)
-=======
         _direction_label = tf.pad(_x['direction_label'].values[:max_seq_len], [_p1])
         _dominant_direction = _x['dominant_direction'].values[:max_seq_len]
         _trial_coherence = _x['trial_coherence'].values[:max_seq_len]
@@ -102,26 +72,11 @@ def create_dataset(paths, max_seq_len=4800, encoding='png', pool=None):
                              tf_dom_dir=_dominant_direction, # 1,2,3,4, length 10 (i.e. per trial/grey screen)
                              tf_trial_coh=_trial_coherence, # 0 or 1, length 10
                              )
->>>>>>> 1d47101aca615c8c3d5f6a245259d8367cd244dc
 
     data_set = data_set.map(_parse_example, num_parallel_calls=24)
     return data_set
 
 
-<<<<<<< HEAD
-def main():
-    file_names = [os.path.expanduser('~/data/processed_data_1.tfrecord')]
-
-    data_set = create_dataset(file_names, 1000).batch(16)
-
-    for ex in data_set:
-        # print({k: v.shape for k, v in ex.items()})
-        print([a.shape for a in ex])
-
-
-if __name__ == '__main__':
-    main()
-=======
 # angs an (n,1) array
 def angs_to_categories(angs):
     categories = np.zeros_like(angs)
@@ -201,4 +156,3 @@ if __name__ == '__main__':
 
 
 
->>>>>>> 1d47101aca615c8c3d5f6a245259d8367cd244dc
